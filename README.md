@@ -16,19 +16,33 @@ Choose your AI tool:
 
 #### Claude Code
 
+> **Official Documentation**: https://docs.anthropic.com/en/docs/claude-code/plugins
+
+Claude Code supports the Agent Skills standard with plugin marketplace integration.
+
 **Method 1: Plugin Marketplace (Recommended)**
 
 ```bash
-# Register this repository
-/plugin marketplace add awesome-ascend-skills
+# Register this marketplace
+/plugin marketplace add ascend-ai-coding/awesome-ascend-skills
 
-# Install all skills
+# Install plugins from the marketplace
 /plugin install ascend-npu@awesome-ascend-skills
-
-# Or install individually
 /plugin install ascend-basic-env@awesome-ascend-skills
 /plugin install ascend-dev@awesome-ascend-skills
+/plugin install ascend-use-cases@awesome-ascend-skills
+/plugin install ascend-utils@awesome-ascend-skills
 ```
+
+**Available Plugins:**
+
+| Plugin | Description | Category |
+|--------|-------------|----------|
+| `ascend-npu` | Complete knowledge base entry point | Development |
+| `ascend-basic-env` | Environment setup, CANN installation | Development |
+| `ascend-dev` | AI model development, inference, training | Development |
+| `ascend-use-cases` | Real-world examples and best practices | Learning |
+| `ascend-utils` | Shared utilities and tools | Productivity |
 
 **Method 2: Direct Copy**
 
