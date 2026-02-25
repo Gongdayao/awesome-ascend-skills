@@ -1,6 +1,14 @@
 ---
 name: ascend-docker
 description: Create Docker containers for Huawei Ascend NPU development with proper device mappings and volume mounts. Use when setting up Ascend development environments in Docker, running CANN applications in containers, or creating isolated NPU development workspaces. Supports privileged mode (default), basic mode, and full mode with profiling/logging. Auto-detects available NPU devices.
+keywords:
+    - ascend
+    - docker
+    - npu
+    - development
+    - 开发环境
+    - 容器化
+    - 昇腾
 ---
 
 # Ascend Docker Container

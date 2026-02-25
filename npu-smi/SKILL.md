@@ -1,6 +1,19 @@
 ---
 name: npu-smi
 description: Huawei Ascend NPU npu-smi command reference. Use for device queries (health, temperature, power, memory, processes, ECC), configuration (thresholds, modes, fan), firmware upgrades (MCU, bootloader, VRD), virtualization (vNPU), and certificate management.
+keywords:
+    - npu-smi
+    - 设备管理
+    - 温度
+    - 功耗
+    - 内存
+    - 进程
+    - ECC
+    - 配置
+    - 风扇
+    - 固件升级
+    - 虚拟化
+    - 证书管理
 ---
 
 # npu-smi Command Reference
