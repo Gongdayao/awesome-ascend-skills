@@ -1,12 +1,30 @@
 # AGENTS.md - Guide for AI Coding Agents
 
-This document provides coding guidelines for AI agents working on the Awesome Ascend Skills repository.
-
----
+Coding guidelines for the Awesome Ascend Skills repository.
 
 ## Repository Overview
 
-This is a **knowledge base repository** for Huawei Ascend NPU development, structured as flat AI Skills. Each skill is a self-contained directory with a `SKILL.md` file.
+A **knowledge base repository** for Huawei Ascend NPU development, structured as flat AI Skills.
+
+**Primary Skills:** npu-smi, hccl-test, atc-model-converter, ascend-docker, msmodelslim, ais-bench, vllm-ascend, ascendc, torch_npu
+
+---
+
+## Build/Test/Validate Commands
+
+```bash
+# Validate all skills
+python3 scripts/validate_skills.py
+
+# Validate single skill
+python3 scripts/validate_skills.py | grep -A 3 "your-skill/"
+
+# Quick checks
+head -20 npu-smi/SKILL.md
+grep "^name:" npu-smi/SKILL.md
+```
+
+**CI/CD:** `.github/workflows/validate-skills.yml` runs on push to `main`/`feat/**` and PRs.
 
 ---
 
@@ -14,78 +32,61 @@ This is a **knowledge base repository** for Huawei Ascend NPU development, struc
 
 ```
 awesome-ascend-skills/
-├── npu-smi/                    # npu-smi device management
-│   ├── SKILL.md
-│   ├── references/
-│   └── scripts/
-├── hccl-test/                  # HCCL performance testing
-│   ├── SKILL.md
-│   ├── references/
-│   └── scripts/
-├── ascendc/                    # AscendC Develop Helper
-│   └── SKILL.md
-└── README.md
-```
-
----
-
-## Commands
-
-### Validation
-
-```bash
-# Verify all SKILL.md files have valid frontmatter
-find . -name "SKILL.md" -exec head -5 {} \; -print
-
-# Verify directory names match skill names
-find . -name "SKILL.md" | while read f; do
-  dir=$(dirname "$f")
-  name=$(grep "^name:" "$f" | cut -d: -f2 | tr -d ' ')
-  expected=$(basename "$dir")
-  [ "$name" = "$expected" ] || echo "Mismatch: $dir has name='$name'"
-done
+├── npu-smi/                    # Skill directory
+│   ├── SKILL.md                # Core content (≤500 lines)
+│   ├── references/             # Detailed docs (optional)
+│   └── scripts/                # Executable scripts (optional)
+├── scripts/validate_skills.py  # Validation script
+└── .claude-plugin/marketplace.json  # Plugin registry
 ```
 
 ---
 
 ## Code Style Guidelines
 
-### SKILL.md Files (Required Format)
-
-Every skill directory MUST contain a `SKILL.md` with this structure:
+### SKILL.md Format
 
 ```yaml
 ---
 name: skill-name                    # MUST match directory name
-description: Clear description with keywords for agent matching.
+description: Clear description (≥20 chars)
+keywords:                            # Optional
+    - keyword1
 ---
 
 # Skill Title
 
 ## Quick Start
-
 Brief examples...
 
 ## Content Sections
-
 Detailed instructions...
-
-## Official References
-- [Link text](url)
 ```
 
 **Rules:**
-- `name` MUST match the directory name exactly
-- `description` MUST be comprehensive (for agent keyword matching)
-- Use relative paths for internal links
-- SKILL.md should be ≤ 500 lines (use references/ for detailed content)
+- `name`: MUST match directory name exactly
+- `description`: ≥20 characters for agent matching
+- **Progressive disclosure:** Core in SKILL.md (≤500 lines), details in `references/`
+- **Bilingual:** Chinese content encouraged
+- **Code blocks:** Always specify language (```bash, python```)
+- **Links:** Use relative paths
 
-### Progressive Disclosure
+### Python Scripts
+```python
+#!/usr/bin/env python3
+from typing import Dict, List, Tuple
 
-Keep SKILL.md lean:
-- Core quick reference in SKILL.md
-- Detailed documentation in references/
-- Executable scripts in scripts/
+def validate(path: str) -> Tuple[List[str], List[str]]:
+    """Docstring."""
+    return [], []
+```
+
+### Shell Scripts
+```bash
+#!/bin/bash
+set -e
+readonly DIR="$(cd "$(dirname "$0")" && pwd)"
+```
 
 ---
 
@@ -93,32 +94,66 @@ Keep SKILL.md lean:
 
 | Element | Convention | Example |
 |---------|------------|---------|
-| Directory names | `lowercase-with-hyphens` | `npu-smi`, `hccl-test` |
+| Directories | `lowercase-with-hyphens` | `npu-smi` |
 | Skill names | Match directory | `name: npu-smi` |
-| Script files | `kebab-case.sh` or `snake_case.py` | `npu-health-check.sh` |
+| Scripts | `kebab-case.sh` / `snake_case.py` | `check-health.sh` |
+| References | `lowercase-with-hyphens.md` | `queries.md` |
+| Configs | `kebab-case.yaml` | `config.yaml` |
+
+---
+
+## Error Handling
+
+**Python:** Explicit errors, actionable messages, `sys.exit(1)` on failure.
+
+**Shell:** Use `set -e`, check return codes, provide fallback.
 
 ---
 
 ## Adding New Skills
 
-1. Create directory at root level: `mkdir -p new-skill`
-2. Create SKILL.md with proper frontmatter
-3. Add references/ and scripts/ as needed
-4. Update README.md skills table
-5. **Update `.claude-plugin/marketplace.json`**: Add the new skill to the `plugins` array with appropriate category
+1. `mkdir -p new-skill`
+2. Create `SKILL.md` with frontmatter
+3. Add `references/`, `scripts/`, `assets/` as needed
+4. Update `.claude-plugin/marketplace.json`
+5. Update `README.md` skills table
+6. Run `python3 scripts/validate_skills.py`
+
+**marketplace.json:**
+```json
+{
+  "name": "new-skill",
+  "description": "Description for agent matching",
+  "source": "./new-skill",
+  "category": "development"
+}
+```
 
 ---
 
 ## Key Principles
 
-1. **Flat structure**: Skills live at root level, no nested hierarchies
-2. **Independence**: Each skill should be usable independently
-3. **Keywords**: Include relevant keywords in `description` for agent matching
-4. **Progressive disclosure**: Core in SKILL.md, details in references/
+1. **Flat structure:** Skills at root level
+2. **Independence:** Each skill usable independently
+3. **Keywords:** Include in `description`
+4. **Progressive disclosure:** Core in SKILL.md, details in `references/`
+5. **Bilingual:** Chinese and English acceptable
 
 ---
 
-## Official Documentation References
+## Validation Checklist
+
+Before submitting PR:
+- [ ] `name` matches directory name
+- [ ] `description` ≥20 characters
+- [ ] Valid YAML frontmatter
+- [ ] Internal links resolve
+- [ ] No `[TODO]` placeholders
+- [ ] Added to `marketplace.json` and `README.md`
+- [ ] `python3 scripts/validate_skills.py` passes
+
+---
+
+## References
 
 - Huawei Ascend: https://www.hiascend.com/document
-- npu-smi: https://www.hiascend.com/document/detail/zh/canncommercial/81RC1/envdeployment/instg/instg_0045.html
