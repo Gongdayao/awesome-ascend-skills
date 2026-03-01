@@ -8,12 +8,7 @@
 
 - [简介](#简介)
 - [安装指南](#安装指南)
-  - [Claude Code](#claude-code)
-  - [OpenCode](#opencode)
-  - [Cursor](#cursor)
-  - [Trae CN](#trae-cn)
-  - [Trae](#trae)
-  - [Codex](#codex)
+  - [自动安装](#自动安装)
   - [手动安装](#手动安装)
 - [Skill 列表](#skill-列表)
 - [Skill 工作原理](#skill-工作原理)
@@ -43,96 +38,47 @@
 
 ## 安装指南
 
-### 前置要求
+### 自动安装
 
-安装前请确保系统已安装 Node.js（包含 npx）：
-
-```bash
-# 检查是否已安装
-npx --version
-
-# 如未安装，请访问 https://nodejs.org 下载安装
-```
-
-### Claude Code
-
-Claude Code 是 Anthropic 推出的终端 AI 编程工具。
+使用 `npx` 一键安装到所有支持的 AI 编程工具：
 
 ```bash
-# 安装 Claude Code
-npm install -g @anthropic-ai/claude-code
-
-# 添加 Skills
+# 安装全部 Skills
 npx skills add ascend-ai-coding/awesome-ascend-skills
+
+# 安装单个 Skill
+npx skills add ascend-ai-coding/awesome-ascend-skills --skill npu-smi
 ```
 
-### OpenCode
-
-OpenCode 是开源的 AI 编程助手。
-
-```bash
-# 安装 OpenCode
-npm install -g @opencode/cli
-
-# 添加 Skills
-npx skills add ascend-ai-coding/awesome-ascend-skills
-```
-
-### Cursor
-
-Cursor 是基于 VS Code 的 AI 编辑器。
-
-```bash
-# Cursor 内置 skills 支持
-# 在 Cursor 设置中添加 Skill 源
-npx skills add ascend-ai-coding/awesome-ascend-skills
-```
-
-### Trae CN
-
-Trae CN 是字节跳动推出的国内版 AI IDE。
-
-```bash
-# Trae CN 支持通过 npx 安装 Skills
-npx skills add ascend-ai-coding/awesome-ascend-skills
-```
-
-### Trae
-
-Trae 是字节跳动推出的国际版 AI IDE。
-
-```bash
-# Trae 支持通过 npx 安装 Skills
-npx skills add ascend-ai-coding/awesome-ascend-skills
-```
-
-### Codex
-
-Codex 是 OpenAI 推出的命令行 AI 编程工具。
-
-```bash
-# 安装 Codex CLI
-npm install -g @openai/codex
-
-# 添加 Skills
-npx skills add ascend-ai-coding/awesome-ascend-skills
-```
+支持的 AI 编程工具：Claude Code、OpenCode、Cursor、Trae、Codex 等。
 
 ### 手动安装
 
-如需本地开发或修改 Skill，可手动安装：
+如果无法使用 `npx`，可以手动复制 Skill 文件：
+
+**方式一：项目级安装**（推荐）
+
+将 Skill 复制到项目根目录的 `.agents/skills/` 下：
 
 ```bash
 # 克隆仓库
 git clone https://github.com/ascend-ai-coding/awesome-ascend-skills.git
-cd awesome-ascend-skills
 
-# 安装到当前目录
-npx skills add .
-
-# 或安装指定 Skill
-npx skills add ./npu-smi
+# 复制需要的 Skill 到项目目录
+cp -r awesome-ascend-skills/npu-smi your-project/.agents/skills/
 ```
+
+**方式二：全局安装**
+
+将 Skill 复制到对应 AI 编程工具的全局 Skills 目录。各平台安装位置请参考官方文档：
+
+| 平台 | 文档链接 |
+|------|--------|
+| OpenCode | https://opencode.ai/docs/zh-cn/skills/ |
+| Cursor | https://cursor.com/cn/docs/context/skills |
+| Claude Code | https://code.claude.com/docs/zh-CN/skills |
+| Trae | https://docs.trae.cn/ide/skills |
+
 
 ---
 
