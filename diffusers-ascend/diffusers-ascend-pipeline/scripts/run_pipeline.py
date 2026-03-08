@@ -71,7 +71,7 @@ def apply_optimizations(pipe, args):
         print(f"Moving pipeline to {device}...")
         pipe = pipe.to(device)
 
-    if args.attention_slicing:
+    if args.attention_slicing and hasattr(pipe, "enable_attention_slicing"):
         print("Enabling attention slicing...")
         pipe.enable_attention_slicing()
 

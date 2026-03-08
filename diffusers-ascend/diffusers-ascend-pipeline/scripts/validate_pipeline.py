@@ -61,6 +61,20 @@ def check_transformers() -> Tuple[bool, str]:
         return False, "transformers not installed"
 
 
+def check_accelerate() -> Tuple[bool, str]:
+    """Check Accelerate installation.
+
+    Accelerate is optional for basic inference, but recommended for CPU offload
+    and other orchestration features referenced in the skill.
+    """
+    try:
+        import accelerate
+
+        return True, f"accelerate {accelerate.__version__}"
+    except ImportError:
+        return True, "accelerate not installed (optional unless using CPU offload)"
+
+
 def check_npu_available(device: str) -> Tuple[bool, str]:
     """Check if NPU device is available."""
     try:
@@ -222,6 +236,7 @@ def main():
         ("torch_npu", lambda: check_torch_npu()),
         ("Diffusers", lambda: check_diffusers()),
         ("Transformers", lambda: check_transformers()),
+        ("Accelerate", lambda: check_accelerate()),
         ("NPU availability", lambda: check_npu_available(args.device)),
         ("NPU memory", lambda: check_npu_memory(args.device, args.min_memory)),
         ("Model weights", lambda: check_model_weights(args.model)),

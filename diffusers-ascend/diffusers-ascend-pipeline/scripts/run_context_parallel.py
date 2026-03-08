@@ -181,7 +181,7 @@ def main():
             ring_degree = args.ring_degree
             ulysses_degree = args.ulysses_degree
             if ring_degree is None and ulysses_degree is None:
-                ring_degree = world_size
+                ulysses_degree = world_size
 
             cp_config = ContextParallelConfig(
                 ring_degree=ring_degree,
