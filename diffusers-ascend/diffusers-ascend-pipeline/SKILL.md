@@ -207,6 +207,125 @@ python scripts/run_pipeline.py \
 
 详细指南：[references/lora-guide.md](references/lora-guide.md)
 
+### 6. 多卡并行推理（Context Parallel）
+
+从 `diffusers>=0.36.0` 开始，可参考 Parallel API 在多卡上做上下文并行（Context Parallel），核心入口为：
+
+- `ContextParallelConfig`
+- `ParallelConfig`
+- `apply_context_parallel`
+
+> Ascend NPU 需使用 `torch.distributed` + `hccl` 后端启动多进程。
+
+```python
+import os
+
+import torch
+import torch.distributed as dist
+import torch_npu
+
+from diffusers import ContextParallelConfig, DiffusionPipeline
+
+
+def setup_dist():
+    if not dist.is_initialized():
+        dist.init_process_group(backend="hccl")
+    local_rank = int(os.environ["LOCAL_RANK"])
+    world_size = dist.get_world_size()
+    torch.npu.set_device(local_rank)
+    return local_rank, world_size
+
+
+local_rank, world_size = setup_dist()
+device = f"npu:{local_rank}"
+
+pipe = DiffusionPipeline.from_pretrained(
+    "black-forest-labs/FLUX.1-dev",
+    torch_dtype=torch.bfloat16,
+).to(device)
+
+# NPU 推荐使用 _native_npu；CUDA 示例通常使用 _native_cudnn
+pipe.transformer.set_attention_backend("_native_npu")
+
+cp_config = ContextParallelConfig(ring_degree=world_size)
+pipe.transformer.enable_parallelism(config=cp_config)
+
+image = pipe(
+    prompt="a tiny astronaut hatching from an egg on the moon",
+    guidance_scale=3.5,
+    num_inference_steps=30,
+).images[0]
+
+if dist.get_rank() == 0:
+    image.save("flux_cp_output.png")
+
+dist.destroy_process_group()
+```
+
+在单机 2 卡示例中可用：
+
+```bash
+torchrun --nproc_per_node=2 scripts/run_context_parallel.py \
+    --model ./fake_flux_dev \
+    --prompt "a tiny astronaut hatching from an egg on the moon" \
+    --parallel-mode context \
+    --device-type npu --backend hccl \
+    --attention-backend _native_npu \
+    --steps 20 --output flux_cp_output.png
+```
+
+若当前后端暂不支持 context parallel（例如底层 attention 内核限制），可退化为多进程 data parallel：
+
+```bash
+torchrun --nproc_per_node=2 scripts/run_context_parallel.py \
+    --model ./fake_flux_dev \
+    --prompt "a tiny astronaut hatching from an egg on the moon" \
+    --parallel-mode data \
+    --device-type npu --backend hccl \
+    --steps 20 --output flux_dp_output.png
+```
+
+除 Ring Attention 外，也可尝试 Ulysses Attention：
+
+```python
+cp_config = ContextParallelConfig(ulysses_degree=world_size)
+pipe.transformer.enable_parallelism(config=cp_config)
+```
+
+若需要进一步调优，请优先查看官方 attention backend 文档：
+
+- `https://huggingface.co/docs/diffusers/v0.36.0/en/optimization/attention_backends`
+- 镜像：`https://hf-mirror.com/docs/diffusers/v0.36.0/en/optimization/attention_backends`
+
+版本注意：
+
+- `diffusers>=0.36.0`：可使用 `api/parallel`。
+- `diffusers<=0.35.2`：仓库路径中无 `docs/source/en/api/parallel.md`，应退化为常规多进程并行（按卡拆分请求）或升级版本。
+
+详细流程：[references/distributed-inference.md](references/distributed-inference.md)
+
+### 7. API 文档索引与按版本检索
+
+当用户询问 "某个 API 怎么用" 时，不要先猜 URL，先按下面流程检索：
+
+1. 读取用户实际版本（例如 `0.35.2`、`0.36.0`）。
+2. 枚举对应 Tag 的 API 文件树：`docs/source/en/api/**`。
+3. 根据用户问题定位具体路径（例如 `parallel.md`、`pipelines/flux.md`）。
+4. 再映射到官网文档 URL；如果官网不可达，回退 `hf-mirror`。
+
+路径映射规则：
+
+- GitHub 源文件：
+  - `https://github.com/huggingface/diffusers/blob/v{version}/docs/source/en/api/{path}.md`
+- 官方文档：
+  - `https://huggingface.co/docs/diffusers/v{version}/en/api/{path}`
+- 镜像文档：
+  - `https://hf-mirror.com/docs/diffusers/v{version}/en/api/{path}`
+
+> 示例：`parallel.md` 在 `v0.36.0` 存在，但在 `v0.35.2` 的 API 路径中不存在。
+
+详细索引：[references/api-navigation.md](references/api-navigation.md)
+
 ## 性能基准测试
 
 使用 benchmark 脚本测量推理性能：
@@ -279,7 +398,28 @@ python scripts/benchmark_pipeline.py \
 | `--steps` | 否 | `20` | 推理步数 |
 | `--warmup-runs` | 否 | `1` | 预热次数 |
 | `--num-runs` | 否 | `5` | 测试次数 |
+| `--attention-slicing` | 否 | 关闭 | 启用 attention slicing |
+| `--vae-slicing` | 否 | 关闭 | 启用 VAE slicing |
+| `--vae-tiling` | 否 | 关闭 | 启用 VAE tiling |
 | `--output-json` | 否 | - | 结果 JSON 输出路径 |
+
+### run_context_parallel.py
+
+多卡 context parallel 推理脚本（需配合 `torchrun`）：
+
+| 参数 | 必需 | 默认 | 说明 |
+|------|------|------|------|
+| `--model` | 是 | - | 本地模型路径 |
+| `--prompt` | 是 | - | 生成提示词 |
+| `--parallel-mode` | 否 | `context` | `context`（Parallel API）或 `data`（多进程并行） |
+| `--device-type` | 否 | `npu` | `npu/cuda/cpu` |
+| `--backend` | 否 | `hccl` | 分布式后端 |
+| `--attention-backend` | 否 | 按设备自动选择 | NPU 默认 `_native_npu`，CUDA 默认 `_native_cudnn` |
+| `--ring-degree` | 否 | 自动（默认=world_size） | Ring Attention 并行度 |
+| `--ulysses-degree` | 否 | - | Ulysses Attention 并行度 |
+| `--dtype` | 否 | `bfloat16` | 数据类型 |
+| `--steps` | 否 | `20` | 推理步数 |
+| `--output` | 否 | `cp_output.png` | Rank0 输出图像 |
 
 ## 常见模型参考
 
@@ -325,6 +465,8 @@ RuntimeError: Expected a 'npu' device type for generator
 - [权重准备](../diffusers-ascend-weight-prep/SKILL.md) - Phase #2: 模型下载与假权重生成
 - [内存优化详解](references/memory-optimization.md) - NPU 内存优化完整指南
 - [LoRA 详解](references/lora-guide.md) - LoRA 加载、多 LoRA、权重融合
+- [多卡并行推理](references/distributed-inference.md) - Context Parallel 与 torchrun 多卡执行
+- [API 检索索引](references/api-navigation.md) - 按版本定位 Diffusers API 路径与文档 URL
 - [故障排查](references/troubleshooting.md) - NPU 推理常见问题与修复
 - [Diffusers 官方文档](https://huggingface.co/docs/diffusers)
 - [昇腾 PyTorch 扩展](https://www.hiascend.com/document/detail/zh/Pytorch/720/apiref/torchnpuCustomsapi/context/概述.md)
