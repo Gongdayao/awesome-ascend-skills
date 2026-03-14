@@ -89,22 +89,22 @@ if [[ "$RERANK_CODE" != "000" && "$RERANK_CODE" != "404" ]]; then
   DETECTED_BACKENDS+=("vllm-rerank")
 fi
 
-# Build backends JSON array
-BACKENDS=$(python3 -c "
-import json
-backends = $(printf '%s\n' "${DETECTED_BACKENDS[@]:-}" | python3 -c "import sys,json; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))" 2>/dev/null || echo '[]')
-print(json.dumps(backends))
-" 2>/dev/null) || BACKENDS="[]"
-
-# Output JSON
+# Build and output final JSON in a single Python call
 python3 -c "
-import json
+import json, sys
+
+# Build backends list from detected backends
+detected = []
+for b in sys.argv[1:]:
+    if b.strip():
+        detected.append(b.strip())
+
 result = {
-    'healthy': $( [[ $HEALTHY == true ]] && echo 'True' || echo 'False' ),
+    'healthy': $(  [[ $HEALTHY == true ]] && echo 'True' || echo 'False' ),
     'models': $MODELS,
     'model_details': $MODEL_DETAILS,
-    'backends': $BACKENDS,
+    'backends': detected,
     'base_url': '$BASE_URL'
 }
 print(json.dumps(result, indent=2))
-"
+" ${DETECTED_BACKENDS[@]+"${DETECTED_BACKENDS[@]}"}

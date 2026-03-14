@@ -9,61 +9,15 @@ Output: JSON {"valid": bool, "warnings": [...], "errors": [...]}
 
 import argparse
 import json
+import os
 import sys
 
-# Backend → required --endpoint mapping (default is /v1/completions)
-BACKEND_ENDPOINT_MAP = {
-    "vllm": "/v1/completions",
-    "openai": "/v1/completions",
-    "openai-chat": "/v1/chat/completions",
-    "openai-audio": "/v1/audio/transcriptions",
-    "openai-embeddings": "/v1/embeddings",
-    "openai-embeddings-chat": "/v1/embeddings",
-    "openai-embeddings-clip": "/v1/embeddings",
-    "openai-embeddings-vlm2vec": "/v1/embeddings",
-    "infinity-embeddings": "/v1/embeddings",
-    "infinity-embeddings-clip": "/v1/embeddings",
-    "vllm-pooling": "/pooling",
-    "vllm-rerank": "/v1/rerank",
-}
-
-# Dataset-backend compatibility matrix
-DATASET_BACKEND_COMPAT = {
-    "random": [
-        "openai", "openai-chat", "vllm",
-        "openai-embeddings", "openai-embeddings-chat",
-        "openai-embeddings-clip", "openai-embeddings-vlm2vec",
-        "infinity-embeddings", "infinity-embeddings-clip",
-        "vllm-pooling",
-    ],
-    "random-mm": ["openai-chat"],
-    "random-rerank": ["vllm-rerank"],
-    "sharegpt": ["openai", "openai-chat", "vllm"],
-    "burstgpt": ["openai", "openai-chat", "vllm"],
-    "custom": ["openai", "openai-chat", "vllm"],
-    "custom_mm": ["openai-chat"],
-    "prefix_repetition": ["openai", "openai-chat", "vllm"],
-    "spec_bench": ["openai", "openai-chat", "vllm"],
-    "hf": None,  # varies by HF dataset, skip strict check
-    "sonnet": ["openai", "openai-chat", "vllm"],
-}
-
-# Datasets that require --dataset-path
-DATASETS_REQUIRING_PATH = {"sharegpt", "burstgpt", "custom", "custom_mm", "spec_bench"}
-
-ALL_BACKENDS = [
-    "vllm", "openai", "openai-chat", "openai-audio",
-    "openai-embeddings", "openai-embeddings-chat",
-    "openai-embeddings-clip", "openai-embeddings-vlm2vec",
-    "infinity-embeddings", "infinity-embeddings-clip",
-    "vllm-pooling", "vllm-rerank",
-]
-
-ALL_DATASETS = [
-    "sharegpt", "burstgpt", "sonnet", "random", "random-mm",
-    "random-rerank", "hf", "custom", "custom_mm",
-    "prefix_repetition", "spec_bench",
-]
+# Allow importing common.py from the same directory
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import (
+    ALL_BACKENDS, ALL_DATASETS, BACKEND_ENDPOINT_MAP,
+    DATASET_BACKEND_COMPAT, DATASETS_REQUIRING_PATH,
+)
 
 
 def validate(args):

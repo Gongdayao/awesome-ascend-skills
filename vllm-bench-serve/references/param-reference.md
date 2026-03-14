@@ -22,6 +22,13 @@ Source of truth: `vllm/benchmarks/serve.py`
 |-----------|------|---------|-------------|
 | `--model` | str | None | Model weight path or identifier, used for tokenizer initialization. If not specified, auto-fetched (`root` field) from `/v1/models`. For `random`/`random-mm`/`random-rerank` datasets, this must point to a valid tokenizer path |
 | `--served-model-name` | str | None | Model name used in API request bodies (`"model"` field). If `--model` is specified but this is not, falls back to `--model` value. If neither is specified, auto-fetched (`id` field) from `/v1/models` |
+
+### When to Use `--model` vs `--served-model-name`
+
+- **Both omitted** (recommended when service is accessible): `vllm bench serve` auto-fetches from `/v1/models` — `root` → tokenizer path, `id` → API model name. Simplest approach.
+- **`--model` only**: Used for both tokenizer and API model name. Useful when the service is not accessible for auto-fetch.
+- **Both specified**: `--model` for tokenizer (e.g., `/data/models/Qwen3-30B-Instruct`), `--served-model-name` for API requests (e.g., `qwen3-30b`). Use when the weight path differs from the served name.
+- **`--skip-tokenizer-init`**: When set (e.g., for embedding/reranking backends), `--model` is less critical but `--served-model-name` must still match what the service expects.
 | `--tokenizer` | str | None | Custom tokenizer path/name |
 | `--tokenizer-mode` | str | `"auto"` | Tokenizer mode: `auto`, `hf`, `slow`, `mistral`, `deepseek_v32`, `qwen_vl` |
 | `--trust-remote-code` | flag | false | Trust HuggingFace remote code |

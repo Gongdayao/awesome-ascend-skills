@@ -20,23 +20,9 @@ import os
 import sys
 from datetime import datetime
 
-# Backend → required --endpoint mapping
-# vllm bench serve defaults --endpoint to /v1/completions, so backends that use
-# a different endpoint MUST have it explicitly specified or the request will fail.
-BACKEND_ENDPOINT_MAP = {
-    "vllm": "/v1/completions",
-    "openai": "/v1/completions",
-    "openai-chat": "/v1/chat/completions",
-    "openai-audio": "/v1/audio/transcriptions",
-    "openai-embeddings": "/v1/embeddings",
-    "openai-embeddings-chat": "/v1/embeddings",
-    "openai-embeddings-clip": "/v1/embeddings",
-    "openai-embeddings-vlm2vec": "/v1/embeddings",
-    "infinity-embeddings": "/v1/embeddings",
-    "infinity-embeddings-clip": "/v1/embeddings",
-    "vllm-pooling": "/pooling",
-    "vllm-rerank": "/v1/rerank",
-}
+# Allow importing common.py from the same directory
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import BACKEND_ENDPOINT_MAP
 
 
 def sanitize_model_name(model: str, max_len: int = 30) -> str:
@@ -207,6 +193,9 @@ def main():
     args = parser.parse_args()
 
     if args.config:
+        if not os.path.exists(args.config):
+            print(f"Error: Config file not found: {args.config}", file=sys.stderr)
+            sys.exit(1)
         with open(args.config) as f:
             params = json.load(f)
     else:

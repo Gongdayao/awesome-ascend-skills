@@ -162,6 +162,8 @@ def main():
     parser.add_argument("--format", default="markdown", choices=["markdown", "json", "csv"])
     parser.add_argument("--sort-by", default="req_throughput",
                         help="Sort by this field (default: req_throughput)")
+    parser.add_argument("--baseline", default=None,
+                        help="Path to a baseline result JSON for regression detection")
 
     args = parser.parse_args()
 
@@ -204,6 +206,41 @@ def main():
         print(json.dumps(results, indent=2))
     elif args.format == "csv":
         print(format_csv(results))
+
+    # Regression detection
+    if args.baseline and args.format == "markdown":
+        baseline = parse_result_file(args.baseline)
+        if baseline and "error" not in baseline:
+            print("\n### Regression Check (vs baseline)")
+            print(f"Baseline: `{args.baseline}`\n")
+            _compare_metrics = [
+                ("req_throughput", "Req/s", True),     # higher is better
+                ("output_tok_s", "Out tok/s", True),   # higher is better
+                ("ttft_p99", "TTFT P99", False),       # lower is better
+                ("tpot_p99", "TPOT P99", False),       # lower is better
+                ("e2e_p99", "E2E P99", False),         # lower is better
+            ]
+            for r in [x for x in results if "error" not in x]:
+                deltas = []
+                for key, label, higher_is_better in _compare_metrics:
+                    try:
+                        cur = float(r.get(key, 0))
+                        base = float(baseline.get(key, 0))
+                        if base > 0:
+                            pct = (cur - base) / base * 100
+                            marker = ""
+                            if higher_is_better and pct < -5:
+                                marker = " REGRESSION"
+                            elif not higher_is_better and pct > 5:
+                                marker = " REGRESSION"
+                            deltas.append(f"  {label}: {pct:+.1f}%{marker}")
+                    except (TypeError, ValueError):
+                        pass
+                if deltas:
+                    print(f"**{r['file']}**")
+                    for d in deltas:
+                        print(d)
+                    print()
 
     # Summary stats
     if args.format == "markdown":

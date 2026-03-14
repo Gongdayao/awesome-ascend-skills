@@ -437,13 +437,13 @@ Confirm the search mode with the user. Default to Mode A if not specified.
 
 ### num_prompts Multiplier
 
-The number of requests per iteration should be a multiple of the search variable to ensure statistical significance:
+The number of requests per iteration: `num_prompts = max(search_value × multiplier, minimum_floor)`. The floor ensures enough samples even at low search values.
 
-| Phase | Multiplier | Purpose |
-|-------|-----------|---------|
-| Coarse probe (Phase 2) | 2~4× | Speed priority |
-| Fine search (Phase 3) | 5~8× | Accuracy priority |
-| Validation (Phase 4) | 8~10× | Confidence priority |
+| Phase | Multiplier | Min Floor | Purpose |
+|-------|-----------|-----------|---------|
+| Coarse probe (Phase 2) | 2~4× | 50 | Speed priority |
+| Fine search (Phase 3) | 5~8× | 100 | Accuracy priority |
+| Validation (Phase 4) | 8~10× | 200 | Confidence priority |
 
 Confirm multiplier preference with user before starting. Use defaults if no preference.
 
@@ -548,3 +548,4 @@ python3 <skill-path>/scripts/aggregate_results.py \
 | `references/scenario-cookbook.md` | 10 ready-to-use benchmark scenario examples |
 | `references/optimization-strategy.md` | Auto-optimization algorithm in full detail |
 | `references/environment-checks.md` | Execution environment prerequisites and checks |
+| `references/troubleshooting.md` | Common errors and solutions (endpoint mismatch, tokenizer failures, etc.) |

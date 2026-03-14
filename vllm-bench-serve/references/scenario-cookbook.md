@@ -4,6 +4,8 @@ Copy-paste examples for common benchmark scenarios. Replace `MODEL`, `IP`, `PORT
 
 > **`--model` note**: In these examples, `MODEL` represents the weight path used for tokenizer initialization (e.g., `/path/to/Qwen3-30B-Instruct`). If the served model name differs from the weight path, also add `--served-model-name SERVED_NAME`. Alternatively, omit `--model` entirely to let `vllm bench serve` auto-fetch both from the service's `/v1/models` endpoint.
 
+> **Filename note**: Examples below use simplified `--result-filename` values for readability. The standard naming convention is `bench_{model_short}_{dataset}_{backend}_{YYYYMMDD_HHMMSS}.json`, which `scripts/generate_bench_cmd.py` auto-generates. Use the script for production benchmarks.
+
 ---
 
 ## 1. Quick Smoke Test

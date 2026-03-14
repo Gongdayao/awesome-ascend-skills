@@ -22,24 +22,12 @@ import os
 import subprocess
 import sys
 import time
-
-# Backend → required --endpoint mapping (default is /v1/completions)
-BACKEND_ENDPOINT_MAP = {
-    "vllm": "/v1/completions",
-    "openai": "/v1/completions",
-    "openai-chat": "/v1/chat/completions",
-    "openai-audio": "/v1/audio/transcriptions",
-    "openai-embeddings": "/v1/embeddings",
-    "openai-embeddings-chat": "/v1/embeddings",
-    "openai-embeddings-clip": "/v1/embeddings",
-    "openai-embeddings-vlm2vec": "/v1/embeddings",
-    "infinity-embeddings": "/v1/embeddings",
-    "infinity-embeddings-clip": "/v1/embeddings",
-    "vllm-pooling": "/pooling",
-    "vllm-rerank": "/v1/rerank",
-}
 from datetime import datetime
 from pathlib import Path
+
+# Allow importing common.py from the same directory
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import BACKEND_ENDPOINT_MAP
 
 
 def run_benchmark(base_args: str, search_param: str, search_value: int | float,
@@ -357,10 +345,17 @@ def main():
 
     # === Phase 3: Binary Search ===
     print("\n--- Phase 3: Binary Search ---")
+    is_integer_search = search_param == "max-concurrency"
     for i in range(8):
-        mid = (lower_bound + upper_bound) // 2
-        if mid == lower_bound:
-            mid = lower_bound + 1
+        mid = (lower_bound + upper_bound) / 2
+        if is_integer_search:
+            mid = int(mid)
+            if mid == lower_bound:
+                mid = lower_bound + 1
+        else:
+            mid = round(mid, 1)
+            if mid <= lower_bound:
+                mid = round(lower_bound + 0.1, 1)
 
         num_prompts = max(int(mid * args.fine_multiplier), 100)
         filename = f"search_{i+1:03d}_{search_param[0]}{mid}.json"
