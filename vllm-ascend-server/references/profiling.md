@@ -134,10 +134,3 @@ npu-smi info | grep -A 5 "Memory-Usage"
 3. **Profile representative workloads** - typical batch sizes, sequence lengths
 4. **Compare before/after** changes to measure impact
 5. **Document baseline metrics** for regression detection
-
-## TODO
-
-- [ ] Add detailed MSProbe usage
-- [ ] Add TensorBoard visualization guide
-- [ ] Add multi-node profiling
-- [ ] Add case studies with specific models

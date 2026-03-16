@@ -309,16 +309,18 @@ Proceed? [yes/no/edit]
 
 ### 5.2 Execute by Platform
 
-**Bare metal:** Execute command directly in shell
+**Persistent session (tmux):** If you connected via tmux and are already inside the target environment (remote host / container / both), execute commands directly — same as bare metal.
 
-**Existing container (local):**
+**Stateless (SSH key / sshpass / paramiko / fabric):**
 
-```bash
-docker exec -it <container> bash
-# Then run vllm serve command
-```
+| Platform | Method |
+|----------|--------|
+| Bare metal | Execute directly in shell |
+| Existing container (local) | `docker exec -it <container> bash`, then run command |
+| Existing container (remote) | SSH → `docker exec -d` for background |
+| Docker (create new) | Use npu-docker-launcher skill |
 
-**Existing container (remote):**
+**Existing container (remote, stateless example):**
 
 ```bash
 # Background launch with logging
@@ -331,22 +333,29 @@ ssh user@host "docker exec -d <container> bash -c 'cd /workspace && \
     ... 2>&1 | tee /tmp/vllm.log'"
 ```
 
-**Docker (create new container):** Use npu-docker-launcher skill
-
 ### 5.3 Verify Startup
 
+**Inside container (bare metal / tmux already in container):**
+
 ```bash
-# Check process is running
-docker exec <container> ps aux | grep vllm
-
-# Check startup logs
-docker exec <container> tail -100 /tmp/vllm.log
-
-# Look for success indicators in logs:
-# - "Starting vLLM API server"
-# - "Application startup complete"
-# - "Available routes are:"
+ps aux | grep vllm
+tail -100 /tmp/vllm.log
+tail -f /tmp/vllm.log
 ```
+
+**From host or remote (stateless, each command needs `docker exec`):**
+
+```bash
+docker exec <container> ps aux | grep vllm
+docker exec <container> tail -100 /tmp/vllm.log
+docker exec <container> tail -f /tmp/vllm.log
+```
+
+**Success indicators in logs:**
+
+- `"Starting vLLM API server"`
+- `"Application startup complete"`
+- `"Available routes are:"`
 
 ### 5.4 Common Execution Patterns
 
@@ -430,4 +439,3 @@ curl http://localhost:8000/v1/chat/completions \
 | Launch | Port in use | Kill existing process |
 | Verify | Health check fails | Check logs, wait longer |
 
-See [troubleshooting.md](troubleshooting.md) for detailed error handling.
