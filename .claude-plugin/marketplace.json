@@ -75,6 +75,12 @@
       "category": "development"
     },
     {
+      "name": "ascend-dmi",
+      "description": "昇腾 NPU 硬件管理、诊断与性能测试。查看 NPU 状态/温度/利用率、测试内存带宽（h2d/d2h/d2d/p2p）、算力/功耗基准测试（TFLOPS/TOPS）、硬件故障诊断、压力测试、复位异常 NPU 卡。",
+      "source": "./ascend-dmi",
+      "category": "operations"
+    },
+    {
       "name": "diffusers-ascend-skills",
       "description": "Diffusers 昇腾 NPU 技能集，包括环境配置、权重准备、Pipeline 推理等。当用户需要在昇腾 NPU 上运行 Diffusers 推理时使用。",
       "source": "./",
