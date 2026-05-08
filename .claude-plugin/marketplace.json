@@ -51,6 +51,12 @@
       "category": "development"
     },
     {
+      "name": "msmodelslim-quant",
+      "description": "Huawei Ascend NPU server model quantization tool skills, specifically designed for accelerating large language model quantization on Ascend NPU cards, focusing on the fast quantization process of msmodelslim-verified models, supporting minor modifications of the quantization process and quantization configurations. Supports INT4/INT8/INT16 quantization, providing a complete quantization workflow, including environment check, dynamic scheme query, container deployment, quantization execution, etc.",
+      "source": "./msmodelslim-quant",
+      "category": "development"
+    },
+    {
       "name": "ais-bench",
       "description": "AI model evaluation tool for Ascend NPU. Supports accuracy evaluation (text, multimodal datasets), performance evaluation (latency, throughput, stress testing), vLLM/Triton inference, 15+ benchmarks (MMLU, GSM8K, MMMU, BFCL), multi-turn dialogue, Function Call, and custom datasets.",
       "source": "./ais-bench",
