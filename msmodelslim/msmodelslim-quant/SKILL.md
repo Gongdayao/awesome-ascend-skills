@@ -32,9 +32,7 @@ keywords:
 
 ## 技能描述
 
-**本技能专为华为昇腾 NPU 服务器定制**，用于在昇腾 NPU 卡上进行大语言模型的quant加速。
-
-msmodelslim 是华为昇腾生态的开源模型 compress工具，支持在昇腾 NPU 上对大模型进行 INT4/INT8/INT16 quant，显著降低模型显存占用并提升推理性能。本技能提供完整的quant工作流，包括环境检查、动态方案query、容器deployment、quant执行等。
+**本技能专为华为昇腾 NPU 服务器定制**，用于在昇腾 NPU 卡上进行大语言模型的quant加速。msmodelslim 是华为昇腾生态的开源模型 compress工具，支持在昇腾 NPU 上对大模型进行 INT4/INT8/INT16 quant，显著降低模型显存占用并提升推理性能。本技能提供完整的quant工作流，包括环境检查、动态方案query、容器deployment、quant执行等。
 
 **适用场景**：
 - 在昇腾 NPU 服务器上进行模型quant
